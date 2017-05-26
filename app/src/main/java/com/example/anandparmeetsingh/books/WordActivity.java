@@ -2,13 +2,16 @@ package com.example.anandparmeetsingh.books;
 
 import android.app.LoaderManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -24,7 +27,7 @@ public class WordActivity extends AppCompatActivity implements LoaderManager.Loa
      * URL for word data from the USGS dataset
      */
     private static String USGS_REQUEST_URL =
-            "https://www.googleapis.com/books/v1/volumes?q=harrypotter";
+            "https://www.googleapis.com/books/v1/volumes?q=harrypotter&key=AIzaSyDB2RQT9jF5WqppJqsEbKK-qa9K85DEwIk";
     /**
      * Adapter for the list of earthquakes
      */
@@ -70,9 +73,13 @@ public class WordActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // Get details on the currently active default data network
         final NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (USGS_REQUEST_URL == null || networkInfo == null) {
+        NetworkInfo activeNetwork = connMgr.getActiveNetworkInfo();
+        final boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        if (USGS_REQUEST_URL == null || !isConnected) {
             wordListView.setEmptyView(mEmptyStateTextView);
             mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+            mEmptyStateTextView.setText("No Connection");
         }
         // If there is a network connection, fetch data
 
@@ -82,34 +89,48 @@ public class WordActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onClick(View v) {
 
-                if (USGS_REQUEST_URL == null || networkInfo == null) {
+                if (USGS_REQUEST_URL == null || !isConnected) {
                     wordListView.setEmptyView(mEmptyStateTextView);
                     mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+                    mEmptyStateTextView.setText("No Connection");
                 }
-                USGS_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=";
-                //mAdapter.notifyDataSetChanged();
-                // Get the text from the EditText and update the mQuery value.
-                mQuery = mEditText.getText().toString().replaceAll(" ", "+");
-                // If it's empty don't proceed.
-                if (mQuery.isEmpty()) {
-                    Toast.makeText(WordActivity.this, "Nothing to search", Toast.LENGTH_SHORT).show();
+                else {
+                    USGS_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=";
+                    //mAdapter.notifyDataSetChanged();
+                    // Get the text from the EditText and update the mQuery value.
+                    mQuery = mEditText.getText().toString().replaceAll(" ", "+");
+                    // If it's empty don't proceed.
+                    if (mQuery.isEmpty()) {
+                        Toast.makeText(WordActivity.this, "Nothing to search", Toast.LENGTH_SHORT).show();
+                        wordListView.setEmptyView(mEmptyStateTextView);
+                        mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+                        mEmptyStateTextView.setText("Nothing to Search");
+                    } else {
+                        // Update the mRequestUrl value with the new mQuery.
+                        USGS_REQUEST_URL = USGS_REQUEST_URL + mQuery + "&key=AIzaSyDB2RQT9jF5WqppJqsEbKK-qa9K85DEwIk";
+                        Log.i("onQueryTextSubmit", "mRequestUrl value is: " + USGS_REQUEST_URL);
+                        // Restart the loader.
+                        LoaderManager loaderManager = getLoaderManager();
+                        loaderManager.restartLoader(1, null, WordActivity.this);
+                        Log.i("onClick", "loader restarted");
+                        View progressBar = findViewById(R.id.progress_bar);
+                        progressBar.setVisibility(View.VISIBLE);
+                        // Try to make the progress bar appear again (not working)
+                        // Update mRequestUrl back to its original value.
+                        USGS_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=";
+                        // This is what makes the ListView update with new info.
+                    }
                 }
-                // Update the mRequestUrl value with the new mQuery.
-                USGS_REQUEST_URL = USGS_REQUEST_URL + mQuery + "&maxResults=15";
-                Log.i("onQueryTextSubmit", "mRequestUrl value is: " + USGS_REQUEST_URL);
-                // Restart the loader.
-                LoaderManager loaderManager = getLoaderManager();
-                loaderManager.restartLoader(1, null, WordActivity.this);
-                Log.i("onClick", "loader restarted");
-                View progressBar = findViewById(R.id.progress_bar);
-                progressBar.setVisibility(View.VISIBLE);
-                // Try to make the progress bar appear again (not working)
-                //View progressBar = findViewById(R.id.progress_bar);
-                //progressBar.setVisibility(View.VISIBLE);
-                // Update mRequestUrl back to its original value.
-                USGS_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=";
-                // This is what makes the ListView update with new info.
-
+            }
+        });
+        wordListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Word currentBook = mAdapter.getItem(position);
+                Uri booksUri = Uri.parse(currentBook.getUrl());
+                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, booksUri);
+                Log.e("Url","This "+booksUri);
+                startActivity(websiteIntent);
             }
         });
         if (networkInfo != null && networkInfo.isConnected()) {
@@ -167,7 +188,7 @@ public class WordActivity extends AppCompatActivity implements LoaderManager.Loa
             words.addAll(earthquakes);
         } else {
             wordListView.setEmptyView(mEmptyStateTextView);
-            mEmptyStateTextView.setText("No Connection");
+            mEmptyStateTextView.setText("Nothing Found");
         }
         mAdapter.notifyDataSetChanged();
 

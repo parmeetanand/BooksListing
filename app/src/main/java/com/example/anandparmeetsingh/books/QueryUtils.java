@@ -1,9 +1,8 @@
 package com.example.anandparmeetsingh.books;
 
+import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
-
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -164,7 +163,7 @@ public class QueryUtils {
         // Catch the exception so the app doesn't crash, and print the error message to the logs.
         try {
 
-
+            Activity mContext = null;
             // Create a JSONObject from the JSON response string
             JSONObject baseJsonResponse = new JSONObject(earthquakeJSON);
             // Extract the JSONArray associated with the key called "features",
@@ -176,34 +175,52 @@ public class QueryUtils {
                 JSONObject currentEarthquake = earthquakeArray.getJSONObject(i);
 
                 JSONObject volumeInfo = currentEarthquake.getJSONObject("volumeInfo");
+                JSONObject salesInfo = currentEarthquake.getJSONObject("saleInfo");
                 String title = volumeInfo.getString("title");
                 if (volumeInfo.has("publishedDate")) {
                     String publishedDate = volumeInfo.getString("publishedDate");
                     //String description = volumeInfo.getString("description");
-                    String pageCount = volumeInfo.getString("maturityRating");
+                    //String thumbnail = volumeInfo.getString("thumbnail");
 
                     //JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
                     if (volumeInfo.has("description")) {
-                        String thumbnail = volumeInfo.getString("description");
+                        String description = volumeInfo.getString("description");
 
                         String[] authors = new String[]{"No Authors"};
-
-                        //if (!volumeInfo.isNull("authors")) {
-
-                        if (volumeInfo.has("authors")) {
-                            JSONArray authorsArray = volumeInfo.getJSONArray("authors");
-                            Log.d(LOG_TAG, "authors #" + authorsArray.length());
-                            authors = new String[authorsArray.length()];
-                            for (int j = 0; j < authorsArray.length(); j++) {
-                                authors[j] = authorsArray.getString(j);
-                            }
-                            Word words = new Word(title, publishedDate, authors, thumbnail);
-                            earthquakes.add(words);
-                        } else {
-                            String[] author = new String[]{"No Authors"};
-                            Word words = new Word(title, publishedDate, author, thumbnail);
-                            earthquakes.add(words);
+                        String imageThumbnail= "https://play.google.com/store/books/details?id=abYKXvCwEToC&rdid=book-abYKXvCwEToC&rdot=1&source=gbs_api";
+                        JSONObject imageLinks;
+                        if (volumeInfo.has("imageLinks")) {
+                            imageLinks = volumeInfo.getJSONObject("imageLinks");
+                            imageThumbnail = imageLinks.getString("thumbnail");
                         }
+                            //if (!volumeInfo.isNull("authors")) {
+                        String bookUrl;
+                        if (salesInfo.has("buyLink")) {
+                            bookUrl = salesInfo.getString("buyLink");
+                            Log.d(LOG_TAG, "Buy " + bookUrl);
+                        } else if (volumeInfo.has("canonicalVolumeLink")){
+                            bookUrl = volumeInfo.getString("canonicalVolumeLink");
+                            Log.d(LOG_TAG, "Volume #" + bookUrl);
+                        }
+                           else {
+                            bookUrl = volumeInfo.getString("infoLink");
+                            Log.d(LOG_TAG, "Info #" + bookUrl);
+                        }
+                            if (volumeInfo.has("authors")) {
+                                JSONArray authorsArray = volumeInfo.getJSONArray("authors");
+                                Log.d(LOG_TAG, "authors #" + authorsArray.length());
+                                authors = new String[authorsArray.length()];
+                                for (int j = 0; j < authorsArray.length(); j++) {
+                                    authors[j] = authorsArray.getString(j);
+                                }
+                                Word words = new Word(title, publishedDate, authors, description,imageThumbnail,bookUrl);
+                                earthquakes.add(words);
+                            } else {
+                                String[] author = new String[]{"No Authors"};
+                                Word words = new Word(title, publishedDate, author, description,imageThumbnail,bookUrl);
+                                earthquakes.add(words);
+                            }
+
                     }
                 }
 

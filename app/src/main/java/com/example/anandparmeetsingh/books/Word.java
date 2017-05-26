@@ -6,11 +6,16 @@ public class Word {
     private String mDate;
     private String[] mDescription;
     private String mAuthor;
+    private String mBookImage;
+    private String mBookUrl;
 
-    public Word(String title, String date,  String author) {
+    public Word(String title, String date, String[] description, String author, String bookImage, String bookUrl) {
         mTitle = title;
         mDate = date;
         mAuthor = author;
+        mDescription = description;
+        mBookImage = bookImage;
+        mBookUrl = bookUrl;
 
 
     }
@@ -40,5 +45,10 @@ public class Word {
         return mAuthor;
     }
 
-
+    public String getBookImage(){
+        return mBookImage;
+    }
+    public String getUrl() {
+        return mBookUrl;
+    }
 }
