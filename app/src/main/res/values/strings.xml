@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Book Viewer</string>
     <string name="details">You can search any book in the text field given below and read it\'s detail. You can also
-    click on a particular book and read further on your browser.
+    click on a particular book and read further on WebView.
     </string>
 </resources>

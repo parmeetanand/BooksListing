@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.anandparmeetsingh.books.R;
+import com.example.anandparmeetsingh.books.WebView;
 import com.example.anandparmeetsingh.books.Word;
 import com.example.anandparmeetsingh.books.WordActivity;
 import com.example.anandparmeetsingh.books.WordAdapter;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ArrayList<Word> words;
     private TextView mEmptyStateTextView;
     private String mQuery = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,11 +126,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         wordListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Intent web = new Intent(MainActivity.this, WebView.class);
                 Word currentBook = mAdapter.getItem(position);
                 Uri booksUri = Uri.parse(currentBook.getUrl());
-                Intent websiteIntent = new Intent(Intent.ACTION_VIEW, booksUri);
-                Log.e("Url","This "+booksUri);
-                startActivity(websiteIntent);
+                web.putExtra("locations", booksUri.toString());
+                startActivity(web);
             }
         });
         if (networkInfo != null && networkInfo.isConnected()) {
@@ -158,20 +160,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return new WordLoader(this, USGS_REQUEST_URL);
     }
 
-    /**
-     * {@link } to perform the network request on a background thread, and then
-     * update the UI with the list of earthquakes in the response.
-     * <p>
-     * AsyncTask has three generic parameters: the input type, a type used for progress updates, and
-     * an output type. Our task will take a String URL, and return an EarthquakeAdapter. We won't do
-     * progress updates, so the second generic is just Void.
-     * <p>
-     * We'll only override two of the methods of AsyncTask: doInBackground() and onPostExecute().
-     * The doInBackground() method runs on a background thread, so it can run long-running code
-     * (like network activity), without interfering with the responsiveness of the app.
-     * Then onPostExecute() is passed the result of doInBackground() method, but runs on the
-     * UI thread, so it can use the produced data to update the UI.
-     */
 
     @Override
     public void onLoadFinished(Loader<List<Word>> loader, List<Word> earthquakes) {

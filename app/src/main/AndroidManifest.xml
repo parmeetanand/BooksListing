@@ -19,8 +19,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WebView" />
-        <activity android:name="com.example.anandparmeetsingh.booklisting.MainActivity"></activity>
+        <activity android:name=".WebView"
+            android:label="Web View">
+        <meta-data android:name="android.webkit.WebView.MetricsOptOut"
+            android:value="true"
+            />
+        </activity>
+        <activity android:name="com.example.anandparmeetsingh.booklisting.MainActivity" />
     </application>
 
 </manifest>
