@@ -49,7 +49,7 @@ public class WordAdapter extends ArrayAdapter<Word> {
 
         ImageView booksView = (ImageView) listItemView.findViewById(R.id.imageView);
         if(currentBook.getBookImage() != null) {
-            Picasso.with(getContext()).load(currentBook.getBookImage()).into(booksView);
+            Picasso.with(getContext()).load(currentBook.getBookImage()).resize(170,200).into(booksView);
 
         }
         return listItemView;
